@@ -40,11 +40,11 @@ AUTODELETEAFTER=30
 
 # the script assumes your sites are stored like ~/sites/example.com, ~/sites/example.net, ~/sites/example.org and so on.
 # if you have a different pattern, such as ~/app/example.com, please change the following to fit the server environment!
-SITES_PATH=${HOME}/sites
+SITES_PATH=/data/www
 
 # if WP is in a sub-directory, please leave this empty!
 # for cPanel, it is likely public_html
-PUBLIC_DIR=public
+PUBLIC_DIR=public_html
 
 ### Variables
 # You may hard-code the domain name and AWS S3 Bucket Name here

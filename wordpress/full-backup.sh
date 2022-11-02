@@ -67,9 +67,9 @@ fi
 let AUTODELETEAFTER--
 
 # check if log directory exists
-if [ ! -d "${HOME}/log" ] && [ "$(mkdir ${HOME}/log)" ]; then
+if [ ! -d "${HOME}/wordpress-backups/log" ] && [ "$(mkdir ${HOME}/wordpress-backups/log)" ]; then
     echo "Log directory not found. The script can't create it, either!"
-    echo "Please create it manually at $HOME/log and then re-run this script."
+    echo "Please create it manually at $HOME/wordpress-backups/log and then re-run this script."
     exit 1
 fi
 

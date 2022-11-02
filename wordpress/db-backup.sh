@@ -55,9 +55,9 @@ AWS_PROFILE=
 script_name=$(basename "$0")
 
 # create log directory if it doesn't exist
-[ ! -d ${HOME}/log ] && mkdir ${HOME}/log
+[ ! -d ${HOME}/wordpress-backups/log ] && mkdir ${HOME}/wordpress-backups/log
 
-LOG_FILE=${HOME}/log/backups.log
+LOG_FILE=${HOME}/wordpress-backups/log/backups.log
 exec > >(tee -a ${LOG_FILE} )
 exec 2> >(tee -a ${LOG_FILE} >&2)
 
@@ -72,9 +72,9 @@ declare -r timestamp=$(date +%F_%H-%M-%S)
 let AUTODELETEAFTER--
 
 # check if log directory exists
-if [ ! -d "${HOME}/log" ] && [ "$(mkdir -p ${HOME}/log)" ]; then
+if [ ! -d "${HOME}/wordpress-backups/log" ] && [ "$(mkdir -p ${HOME}/wordpress-backups/log)" ]; then
     echo 'Log directory not found'
-    echo "Please create it manually at $HOME/log and then re-run this script"
+    echo "Please create it manually at $HOME/wordpress-backups/log and then re-run this script"
     exit 1
 fi
 

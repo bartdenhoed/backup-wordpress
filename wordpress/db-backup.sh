@@ -22,15 +22,15 @@
 # aws configure (as normal user)
 
 # where to store the database backups?
-BACKUP_PATH=${HOME}/backups/db-backups
+BACKUP_PATH=${HOME}/wordpress-backups/db-backups
 ENCRYPTED_BACKUP_PATH=${HOME}/backups/encrypted-db-backups
 
 # the script assumes your sites are stored like ~/sites/example.com, ~/sites/example.net, ~/sites/example.org and so on.
 # if you have a different pattern, such as ~/app/example.com, please change the following to fit the server environment!
-SITES_PATH=/data/www
+SITES_PATH=/home/forge
 
 # if WP is in a sub-directory, please leave this empty!
-PUBLIC_DIR=public_html
+PUBLIC_DIR=public
 
 # a passphrase for encryption, in order to being able to use almost any special characters use ""
 PASSPHRASE=
@@ -76,7 +76,7 @@ if [ ! -d "${HOME}/log" ] && [ "$(mkdir -p ${HOME}/log)" ]; then
     echo 'Log directory not found'
     echo "Please create it manually at $HOME/log and then re-run this script"
     exit 1
-fi 
+fi
 
 # create the dir to keep backups, if not exists
 if [ ! -d "$BACKUP_PATH" ] && [ "$(mkdir -p $BACKUP_PATH)" ]; then
@@ -148,7 +148,7 @@ if [ -f "$wp_cli" ]; then
 	ln -s $ENCRYPTED_DB_OUTPUT_FILE_NAME $DB_LATEST_FILE_NAME
     else
       ln -s $DB_OUTPUT_FILE_NAME $DB_LATEST_FILE_NAME
-    fi	
+    fi
     if [ "$?" != "0" ]; then
         echo; echo 'Something went wrong while taking local backup!'
         rm -f $DB_OUTPUT_FILE_NAME &> /dev/null
@@ -176,7 +176,7 @@ if [ "$AWS_BUCKET" != "" ]; then
     fi
 fi
 
-# Auto delete backups 
+# Auto delete backups
 [ -d "$BACKUP_PATH" ] && find $BACKUP_PATH -type f -mtime +$AUTODELETEAFTER -exec rm {} \;
 [ -d $ENCRYPTED_BACKUP_PATH ] && find $ENCRYPTED_BACKUP_PATH -type f -mtime +$AUTODELETEAFTER -exec rm {} \;
 
@@ -187,4 +187,3 @@ else
 fi
 
 echo "Script ended on... $(date +%c)"
-

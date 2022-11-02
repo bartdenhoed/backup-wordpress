@@ -40,11 +40,11 @@ AUTODELETEAFTER=30
 
 # the script assumes your sites are stored like ~/sites/example.com, ~/sites/example.net, ~/sites/example.org and so on.
 # if you have a different pattern, such as ~/app/example.com, please change the following to fit the server environment!
-SITES_PATH=/data/www
+SITES_PATH=/home/forge
 
 # if WP is in a sub-directory, please leave this empty!
 # for cPanel, it is likely public_html
-PUBLIC_DIR=public_html
+PUBLIC_DIR=public
 
 ### Variables
 # You may hard-code the domain name and AWS S3 Bucket Name here
@@ -74,7 +74,7 @@ if [ ! -d "${HOME}/log" ] && [ "$(mkdir ${HOME}/log)" ]; then
 fi
 
 # where to store the backup file/s
-BACKUP_PATH=${HOME}/backups/full-backups
+BACKUP_PATH=${HOME}/wordpress-backups/full-backups
 if [ ! -d "$BACKUP_PATH" ] && [ "$(mkdir -p $BACKUP_PATH)" ]; then
     echo "BACKUP_PATH is not found at $BACKUP_PATH. The script can't create it, either!"
     echo 'You may want to create it manually'
@@ -205,7 +205,7 @@ if [ "$BUCKET_NAME" != "" ]; then
     fi
 fi
 
-# Auto delete backups 
+# Auto delete backups
 find $BACKUP_PATH -type f -mtime +$AUTODELETEAFTER -exec rm {} \;
 
 echo 'Full backup is done; please check the latest backup in '${BACKUP_PATH}'.';

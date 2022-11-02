@@ -37,10 +37,10 @@ AUTODELETEAFTER=30
 
 # the script assumes your sites are stored like ~/sites/example.com, ~/sites/example.net, ~/sites/example.org and so on.
 # if you have a different pattern, such as ~/app/example.com, please change the following to fit the server environment!
-SITES_PATH=/data/www
+SITES_PATH=/home/forge
 
 # if WP is in a sub-directory, please leave this empty!
-PUBLIC_DIR=public_html
+PUBLIC_DIR=public
 
 ### Variables
 # You may hard-code the domain name and AWS S3 Bucket Name here
@@ -72,7 +72,7 @@ if [ ! -d "${HOME}/log" ] && [ "$(mkdir -p ${HOME}/log)" ]; then
     echo "Log directory not found. The script can't create it, either!"
     echo "Please create it manually at $HOME/log and then re-run this script"
     exit 1
-fi 
+fi
 
 if [ -f "$HOME/.envrc"  ]; then
     source ~/.envrc
@@ -115,7 +115,7 @@ fi
 
 
 # where to store the backup file/s
-BACKUP_PATH=${HOME}/backups/files-backup-without-uploads
+BACKUP_PATH=${HOME}/wordpress-backups/files-without-uploads-backups
 if [ ! -d "$BACKUP_PATH" ] && [ "$(mkdir -p $BACKUP_PATH)" ]; then
     echo "BACKUP_PATH is not found at $BACKUP_PATH. The script can't create it, either!"
     echo 'You may want to create it manually'
@@ -127,7 +127,7 @@ fi
 EXCLUDE_BASE_PATH=${DOMAIN}
 if [ "$PUBLIC_DIR" != "" ]; then
     EXCLUDE_BASE_PATH=${EXCLUDE_BASE_PATH}/${PUBLIC_DIR}
-fi  
+fi
 
 declare -A EXC_PATH
 EXC_PATH[1]=${EXCLUDE_BASE_PATH}/wp-content/cache
@@ -163,7 +163,7 @@ if [ "$BUCKET_NAME" != "" ]; then
     fi
 fi
 
-# Auto delete backups 
+# Auto delete backups
 find $BACKUP_PATH -type f -mtime +$AUTODELETEAFTER -exec rm {} \;
 
 echo; echo 'Files backup (without uploads) is done; please check the latest backup in '${BACKUP_PATH}'.';

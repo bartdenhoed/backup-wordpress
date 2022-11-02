@@ -1,17 +1,13 @@
 #!/bin/bash
 
-# version - 3.2.1
+# version - 1.0
+
+# based on db-backup.sh script version 3.2.1
 
 # changelog
-# version: 3.2.1
-#   - date: 2021-07-14
-#   - aws cli add option "--only-show-errors"
-# version: 3.2.0
-#   - date: 2021-03-27
-#   - improve naming scheme.
-# version: 3.1.1
-#   - date: 2020-11-24
-#   - improve documentation.
+# version: 1.0
+#   - date: 2022-10-03
+#   - first version
 
 ### Variables - Please do not add trailing slash in the PATHs
 
@@ -27,10 +23,10 @@ ENCRYPTED_BACKUP_PATH=${HOME}/backups/encrypted-db-backups
 
 # the script assumes your sites are stored like ~/sites/example.com, ~/sites/example.net, ~/sites/example.org and so on.
 # if you have a different pattern, such as ~/app/example.com, please change the following to fit the server environment!
-SITES_PATH=/data/www
+SITES_PATH=${HOME}/sites
 
 # if WP is in a sub-directory, please leave this empty!
-PUBLIC_DIR=public_html
+PUBLIC_DIR=public
 
 # a passphrase for encryption, in order to being able to use almost any special characters use ""
 PASSPHRASE=
@@ -65,7 +61,6 @@ echo "Script started on... $(date +%c)"
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin
 
-declare -r wp_cli=`which wp`
 which aws &> /dev/null && declare -r aws_cli=`which aws`
 declare -r timestamp=$(date +%F_%H-%M-%S)
 
@@ -115,6 +110,12 @@ if [ "$DOMAIN" == ""  ]; then
     fi
 fi
 
+# convert forward slash found in sub-directories to hyphen
+# ex: example.com/test would become example.com-test
+DOMAIN_FULL_PATH=$(echo $DOMAIN | awk '{gsub(/\//,"_")}; 1')
+
+source ~/sites/${DOMAIN_FULL_PATH}/.env
+
 WP_PATH=${SITES_PATH}/$DOMAIN/${PUBLIC_DIR}
 if [ ! -d "$WP_PATH" ]; then
     echo; echo 'WordPress is not found at '$WP_PATH; echo "Usage ${script_name} domainname.tld (S3 bucket name)"; echo;
@@ -129,32 +130,25 @@ if [ "$AWS_BUCKET" == ""  ]; then
     fi
 fi
 
-# convert forward slash found in sub-directories to hyphen
-# ex: example.com/test would become example.com-test
-DOMAIN_FULL_PATH=$(echo $DOMAIN | awk '{gsub(/\//,"_")}; 1')
-
 DB_OUTPUT_FILE_NAME=${BACKUP_PATH}/db-${DOMAIN_FULL_PATH}-${timestamp}.sql.gz
 ENCRYPTED_DB_OUTPUT_FILE_NAME=${ENCRYPTED_BACKUP_PATH}/db-${DOMAIN_FULL_PATH}-${timestamp}.sql.gz
 DB_LATEST_FILE_NAME=${BACKUP_PATH}/db-${DOMAIN_FULL_PATH}-latest.sql.gz
 
 # take actual DB backup
-if [ -f "$wp_cli" ]; then
-    $wp_cli --path=${WP_PATH} transient delete --all
-    $wp_cli --path=${WP_PATH} db export --no-tablespaces=true --add-drop-table - | gzip > $DB_OUTPUT_FILE_NAME
-    [ -f $DB_LATEST_FILE_NAME ] && rm $DB_LATEST_FILE_NAME
-    if [ -n "$PASSPHRASE" ] ; then
-        gpg --symmetric --passphrase $PASSPHRASE --batch -o ${ENCRYPTED_DB_OUTPUT_FILE_NAME} $DB_OUTPUT_FILE_NAME
-        rm $DB_OUTPUT_FILE_NAME
-	ln -s $ENCRYPTED_DB_OUTPUT_FILE_NAME $DB_LATEST_FILE_NAME
-    else
-      ln -s $DB_OUTPUT_FILE_NAME $DB_LATEST_FILE_NAME
-    fi	
-    if [ "$?" != "0" ]; then
-        echo; echo 'Something went wrong while taking local backup!'
-        rm -f $DB_OUTPUT_FILE_NAME &> /dev/null
-    fi
+
+mysqldump --add-drop-table -u$DB_USERNAME $DB_DATABASE -p"$DB_PASSWORD" | gzip > $DB_OUTPUT_FILE_NAME
+
+[ -f $DB_LATEST_FILE_NAME ] && rm $DB_LATEST_FILE_NAME
+if [ -n "$PASSPHRASE" ] ; then
+    gpg --symmetric --passphrase $PASSPHRASE --batch -o ${ENCRYPTED_DB_OUTPUT_FILE_NAME} $DB_OUTPUT_FILE_NAME
+    rm $DB_OUTPUT_FILE_NAME
+    ln -s $ENCRYPTED_DB_OUTPUT_FILE_NAME $DB_LATEST_FILE_NAME
 else
-    echo 'Please install wp-cli and re-run this script'; exit 1;
+    ln -s $DB_OUTPUT_FILE_NAME $DB_LATEST_FILE_NAME
+fi
+if [ "$?" != "0" ]; then
+    echo; echo 'Something went wrong while taking local backup!'
+    rm -f $DB_OUTPUT_FILE_NAME &> /dev/null
 fi
 
 # external backup
@@ -187,4 +181,3 @@ else
 fi
 
 echo "Script ended on... $(date +%c)"
-

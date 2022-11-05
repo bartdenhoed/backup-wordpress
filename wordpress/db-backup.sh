@@ -27,7 +27,7 @@ ENCRYPTED_BACKUP_PATH=${HOME}/backups/encrypted-db-backups
 
 # the script assumes your sites are stored like ~/sites/example.com, ~/sites/example.net, ~/sites/example.org and so on.
 # if you have a different pattern, such as ~/app/example.com, please change the following to fit the server environment!
-SITES_PATH=/home/forge
+SITES_PATH=${HOME}
 
 # if WP is in a sub-directory, please leave this empty!
 PUBLIC_DIR=public

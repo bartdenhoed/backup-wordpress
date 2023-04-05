@@ -40,7 +40,7 @@ AUTODELETEAFTER=30
 
 # the script assumes your sites are stored like ~/sites/example.com, ~/sites/example.net, ~/sites/example.org and so on.
 # if you have a different pattern, such as ~/app/example.com, please change the following to fit the server environment!
-SITES_PATH=${HOME}
+SITES_PATH=/home/forge
 
 # if WP is in a sub-directory, please leave this empty!
 # for cPanel, it is likely public_html
@@ -50,6 +50,8 @@ PUBLIC_DIR=public
 # You may hard-code the domain name and AWS S3 Bucket Name here
 DOMAIN=
 BUCKET_NAME=
+
+BACKUP_DIR=/home/forge/site-backups
 
 #-------- Do NOT Edit Below This Line --------#
 
@@ -67,23 +69,30 @@ fi
 let AUTODELETEAFTER--
 
 # check if log directory exists
-if [ ! -d "${HOME}/wordpress-backups/log" ] && [ "$(mkdir ${HOME}/wordpress-backups/log)" ]; then
+if [ ! -d "$BACKUP_DIR/log" ] && [ "$(mkdir $BACKUP_DIR/log)" ]; then
     echo "Log directory not found. The script can't create it, either!"
     echo "Please create it manually at $HOME/wordpress-backups/log and then re-run this script."
     exit 1
 fi
 
 # where to store the backup file/s
-BACKUP_PATH=${HOME}/wordpress-backups/full-backups
+BACKUP_PATH=$BACKUP_DIR/full-backups
 if [ ! -d "$BACKUP_PATH" ] && [ "$(mkdir -p $BACKUP_PATH)" ]; then
     echo "BACKUP_PATH is not found at $BACKUP_PATH. The script can't create it, either!"
     echo 'You may want to create it manually'
     exit 1
 fi
 
-ENCRYPTED_BACKUP_PATH=${HOME}/backups/encrypted-full-backups
+ENCRYPTED_BACKUP_PATH=$BACKUP_DIR/encrypted-full-backups
 if [ -n "$PASSPHRASE" ] && [ ! -d "$ENCRYPTED_BACKUP_PATH" ] && [ "$(mkdir -p $ENCRYPTED_BACKUP_PATH)" ]; then
     echo "ENCRYPTED_BACKUP_PATH is not found at $ENCRYPTED_BACKUP_PATH. The script can't create it, either!"
+    echo 'You may want to create it manually'
+    exit 1
+fi
+
+DB_BACKUP_PATH=$BACKUP_DIR/db-backups
+if [ ! -d "$DB_BACKUP_PATH" ] && [ "$(mkdir -p $DB_BACKUP_PATH)" ]; then
+    echo "DB_BACKUP_PATH is not found at $DB_BACKUP_PATH. The script can't create it, either!"
     echo 'You may want to create it manually'
     exit 1
 fi
@@ -146,7 +155,7 @@ for i in "${!EXC_PATH[@]}" ; do
 done
 
 #------------- from db-script.sh --------------#
-DB_OUTPUT_FILE_NAME=${SITES_PATH}/${DOMAIN}/db.sql
+DB_OUTPUT_FILE_NAME=$DB_BACKUP_PATH/${DOMAIN}-$timestamp-raw-db.sql
 
 # take actual DB backup
 $wp_cli --path=${WP_PATH} transient delete --all
